@@ -2,6 +2,7 @@
 #include "res_path.h"
 #include "drawing_functions.h"
 #include "SDL_mixer.h"
+#include "globals.h"
 
 // A bit hacky way to resolve issue with SDL2 and Visual Studio 2015
 #ifdef main
@@ -18,7 +19,7 @@ int main(int argc, char **agv) {
 
 	// Setup window
 	SDL_Window *window = SDL_CreateWindow("HacknSlash", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
-		640, 352, SDL_WINDOW_SHOWN); // Fullscreen --> SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN
+		Globals::ScreenWidth*Globals::ScreenScale, Globals::ScreenHeight*Globals::ScreenScale, SDL_WINDOW_SHOWN); // Fullscreen --> SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN
 
 	if (window == nullptr) {
 		SDL_Quit();
@@ -27,8 +28,8 @@ int main(int argc, char **agv) {
 	}
 
 	// Setup renderer
-	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	if (renderer == nullptr) {
+	Globals::renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	if (Globals::renderer == nullptr) {
 		cleanup(window);
 		SDL_Quit();
 		cout << "Renderer error" << endl;
@@ -36,7 +37,7 @@ int main(int argc, char **agv) {
 	}
 
 	// The size to draw things at, before we scale it to the screen size dimensions mentioned in CreateWindow
-	SDL_RenderSetLogicalSize(renderer, 640, 352);
+	SDL_RenderSetLogicalSize(Globals::renderer, Globals::ScreenWidth, Globals::ScreenHeight);
 
 	// Initialise SDL_Image
 	if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
@@ -61,19 +62,19 @@ int main(int argc, char **agv) {
 
 	// Load up a texture to draw
 	string resourcePath = getResourcePath();
-	SDL_Texture *texture = loadTexture(resourcePath + "map.png", renderer);
+	SDL_Texture *texture = loadTexture(resourcePath + "map.png", Globals::renderer);
 	
 	// Run game for 5000 ticks
 	while (SDL_GetTicks() < 5000) {
 		// Clear the screen
-		SDL_RenderClear(renderer);
+		SDL_RenderClear(Globals::renderer);
 		// Draw what we want to the screen
-		renderTexture(texture, renderer, 0, 0);
+		renderTexture(texture, Globals::renderer, 0, 0);
 		// Show image we've been rendering
-		SDL_RenderPresent(renderer);
+		SDL_RenderPresent(Globals::renderer);
 	}
 
-	cleanup(renderer);
+	cleanup(Globals::renderer);
 	cleanup(window);
 	cleanup(texture);
 
